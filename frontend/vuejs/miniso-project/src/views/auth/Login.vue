@@ -9,6 +9,7 @@
 // insted of importing axios we import AxiosInstance, where base url and cradentials are defined.
 
 import { reactive } from 'vue';
+import { AxiosError } from 'axios';
 import axiosInstance from '../../lib/axios'; //@ is path alias it is a shortcut that points directly to your src folder.
                                              //so only @ insted of ../../lib/axios.
 
@@ -26,23 +27,34 @@ const form = reactive<LoginForm>({           //a Vue function that makes an enti
     
 });
 
+const errors = reactive({           //deal with error in form
+    email: [],
+    password: []
+});
+
 
 
 
 
 const login = async(payload: LoginForm) =>{   
-    await axiosInstance.get("/sanctum/csrf-cookie",{
-        baseURL: "http://localhost:8000",
-    });                                     //initialize the security.
-                                            //Before sending any data, asking Laravel for a CSRF cookie.
-                                            //we used baseURL cause it dosent has api/ in its route.
+    await axiosInstance.get("/sanctum/csrf-cookie",{    //initialize the security.
+        baseURL: "http://localhost:8000",               //Before sending any data, asking Laravel for a CSRF cookie.
+    });                                                 //we used baseURL cause it dosent has api/ in its route.
+                                            
+    errors.email = [];                                  //to reset the error msg before page redirects.
+    errors.password = [];                                
+    
+    
     try{
-        const response = await axiosInstance.post('/login', payload);    //payload is a variable name for the data you are sending to the server.
+        await axiosInstance.post('/login', payload);    //payload is a variable name for the data you are sending to the server.
 
-        console.log(response.data);
+    }catch (e){
+       
+        if(e instanceof AxiosError && e.response?.status === 422){
 
-    }catch (error){
-        console.error(error);
+            errors.email = e.response.data.errors.email;
+            errors.password = e.response.data.errors.password;
+        }
     }
 };
 
@@ -72,7 +84,17 @@ const login = async(payload: LoginForm) =>{
                 v-model="form.email"
                 class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand 
                 focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" 
-                placeholder="name@flowbite.com"/>
+                placeholder="name@flowbite.com"
+            />
+            <template v-if="errors.email?.length">
+                <span
+                    v-for="error in errors.email"
+                    :key="error"
+                    class="text-red-500 text-xs italic"
+                >
+                    {{ error }}
+                </span>
+            </template>
         </div>
         <div class="mb-5 text-left">
             <label 
@@ -84,7 +106,17 @@ const login = async(payload: LoginForm) =>{
                 v-model="form.password"
                 class="bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block w-full 
                 px-3 py-2.5 shadow-xs placeholder:text-body" 
-                placeholder="••••••••"/>
+                placeholder="••••••••"
+            />
+            <template v-if="errors.password?.length">
+                <span
+                    v-for="error in errors.password"
+                    :key="error"
+                    class="text-red-500 text-xs italic"
+                >
+                    {{ error }}
+                </span>
+            </template>
         </div>
        
 
