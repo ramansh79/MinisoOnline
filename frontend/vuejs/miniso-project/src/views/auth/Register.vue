@@ -9,18 +9,16 @@
 // insted of importing axios we import AxiosInstance, where base url and cradentials are defined.
 
 import { reactive } from 'vue';
-import { AxiosError } from 'axios';
-import axiosInstance from '../../lib/axios'; //@ is path alias it is a shortcut that points directly to your src folder.
-                                             //so only @ insted of ../../lib/axios.
-                                            //sends withCredentials:true, it sends the security cookies required by Laravel.
+// import { AxiosError } from 'axios';
+// import axiosInstance from '../../lib/axios';                //@ is path alias it is a shortcut that points directly to your src folder.
+                                                            //so only @ insted of ../../lib/axios.
+                                                            //sends withCredentials:true, it sends the security cookies required by Laravel.
 
+import type { RegisterForm } from '@/types/index'           //Interface is a TypeScript tool used for Type Safety
+                                                            //acts as a blueprint that defines exactly what properties the form object must have (name, email, etc.) and what data types they are
+                                                            //used for Prevention of Typos & Autocompletion
+// import router from '../../router/index';
 
-interface RegisterForm{                         //Interface is a TypeScript tool used for Type Safety
-    name: string;                               //acts as a blueprint that defines exactly what properties the form object must have (name, email, etc.) and what data types they are
-    email: string;                              //used for Prevention of Typos & Autocompletion
-    password: string;
-    password_confirmation: string;
-}
 const form = reactive<RegisterForm>({           //a Vue function that makes an entire object reactive.
     name:"",                                    //Vue automatically detects the change and updates the internal state of that object instantly.
     email:"",                                   //By writing reactive<RegisterForm>(...), you are telling Vue: "I want this reactive object to follow the rules defined in the RegisterForm interface."
@@ -28,18 +26,20 @@ const form = reactive<RegisterForm>({           //a Vue function that makes an e
     password_confirmation:"",
 });
 
-const errors = reactive({       //deal with error in form.
 
-    name: [],
-    email: [],
-    password: [],
-});
+
+// const errors = reactive({                       //deal with error in form.
+//                                                 //reactive storage
+//     name: [],
+//     email: [],
+//     password: [],
+// });
 
 
 //this is the main function used up to making register to login form.
 //it is with out error display in form.
 
-// const register = async(payload: RegisterForm) =>{   
+// const register = async(payload: RegisterForm) =>{                //payload is the type of RegisterForm.
 //     await axiosInstance.get("/sanctum/csrf-cookie",{
 //         baseURL: "http://localhost:8000",
 //     });                                     //initialize the security.
@@ -58,31 +58,35 @@ const errors = reactive({       //deal with error in form.
 
 
 //with error display
-const register = async(payload: RegisterForm) =>{           
-    await axiosInstance.get("/sanctum/csrf-cookie",{        //initialize the security.
-        baseURL: "http://localhost:8000",                   //Before sending any data, asking Laravel for a CSRF cookie.
-    });                                                     //we used baseURL cause it dosent has api/ in its route.
-                                            
-    errors.name = [];                                       //to reset the error msg before page redirects.
-    errors.email = [];
-    errors.password = []; 
+// const register = async(payload: RegisterForm) =>{           
+//     await axiosInstance.get("/sanctum/csrf-cookie",{        //initialize the security.
+//         baseURL: "http://localhost:8000",                   //Before sending any data, asking Laravel for a CSRF cookie.
+//     });                                                     //we used baseURL cause it dosent has api/ in its route.
+         
+//     //to reset the old msg from previous error msg before page reload(when u hit submit).
+//     errors.name = [];                                       
+//     errors.email = [];
+//     errors.password = []; 
     
-    try{
-        await axiosInstance.post('/register', payload);    //payload is a variable name for the data you are sending to the server.
+//     try{
+//         await axiosInstance.post('/register', payload);    //payload is a variable name for the data you are sending to the server.
+//                                                             //sends request to laravel.(also )
+//         router.push("/dashboard");
+//     }catch (e){
+//         if(e instanceof AxiosError && e.response?.status === 422){                      //e is instanceof AxiosError.
+//                                                                                         //is errors response status = 422.
+//             errors.name = e.response.data.errors.name;
+//             errors.email = e.response.data.errors.email;
+//             errors.password = e.response.data.errors.password;
 
-    }catch (e){
-        if(e instanceof AxiosError && e.response?.status === 422){                      //e is instanceof AxiosError.
-                                                                                        //is errors response status is 422.
-            errors.name = e.response.data.errors.name;
-            errors.email = e.response.data.errors.email;
-            errors.password = e.response.data.errors.password;
-
-        }
+//         }
         
-    }
-};
+//     }
+// };
 
+import { useAuthStore } from '@/store/auth';
 
+const { register, errors1} = useAuthStore();
 
 
 </script>
@@ -93,8 +97,8 @@ const register = async(payload: RegisterForm) =>{
 
 <template>
     <h1 class="text-3xl text-slate-200 p-4">Resgister</h1>
-<!-- .prevent is a Modifier. HTML form refresh the whole page so it stops that default behavior so your js can handle the submission smoothly without a page reload.-->
- <!-- v-model is the "bridge" between your HTML and your JavaScript -->
+    <!-- .prevent is a Modifier. HTML form refresh the whole page so it stops that default behavior so your js can handle the submission smoothly without a page reload.-->
+    <!-- v-model is the "bridge" between your HTML and your JavaScript -->
     <form @submit.prevent="register(form)"                         
                                                             
         class="max-w-sm mx-auto p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
@@ -112,9 +116,9 @@ const register = async(payload: RegisterForm) =>{
                 px-3 py-2.5 shadow-xs placeholder:text-body" 
                 placeholder="name" 
             />
-            <template v-if="errors.name?.length">
+            <template v-if="errors1.name?.length">
                 <span
-                    v-for="error in errors.name"
+                    v-for="error in errors1.name"
                     :key="error"
                     class="text-red-500 text-xs italic"
                 >
@@ -135,15 +139,21 @@ const register = async(payload: RegisterForm) =>{
                 focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" 
                 placeholder="name@flowbite.com"
             />
-            <template v-if="errors.email?.length">
+            <template v-if="errors1.email?.length">
                 <span
-                    v-for="error in errors.email"
+                    v-for="error in errors1.email"
                     :key="error"
                     class="text-red-500 text-xs italic"
                 >
                     {{ error }}
                 </span>
             </template>
+            
+            <!-- v-if="errors1.name?.length": This is a guard. It tells Vue: "Only show this section if the name array has at least one error message inside it."
+                v-for="error in errors1.name": This is a loop. If Laravel sends multiple errors for one field (e.g., "Too short" and "Must contain numbers"), 
+                this loop will create a separate red <span> for every single message. -->
+
+
         </div>
         <div class="mb-5 text-left">
             <label 
@@ -157,9 +167,9 @@ const register = async(payload: RegisterForm) =>{
                 px-3 py-2.5 shadow-xs placeholder:text-body" 
                 placeholder="••••••••"
             />
-            <template v-if="errors.password?.length">
+            <template v-if="errors1.password?.length">
                 <span
-                    v-for="error in errors.password"
+                    v-for="error in errors1.password"
                     :key="error"
                     class="text-red-500 text-xs italic"
                 >

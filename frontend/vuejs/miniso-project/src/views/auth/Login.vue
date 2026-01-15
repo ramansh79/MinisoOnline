@@ -1,62 +1,62 @@
 <script setup lang="ts">
 
-// import axios from 'axios';
-
-// axios.defaults.withCredentials = true;//Tells Axios to send cookies (like your session ID) back and forth with every request.
-// axios.defaults.withXSRFToken = true;//Tells Axios to look for a specific security token (XSRF-TOKEN) in the cookies and send it back in the headers.
-// axios.defaults.baseURL= "http://localhost:8000";
-
-// insted of importing axios we import AxiosInstance, where base url and cradentials are defined.
 
 import { reactive } from 'vue';
-import { AxiosError } from 'axios';
-import axiosInstance from '../../lib/axios'; //@ is path alias it is a shortcut that points directly to your src folder.
-                                             //so only @ insted of ../../lib/axios.
+// import { AxiosError } from 'axios';
+// import axiosInstance from '../../lib/axios'; //@ is path alias it is a shortcut that points directly to your src folder.
+//                                              //so only @ insted of ../../lib/axios.
+
+import type { LoginForm } from '@/types';   //importing interface
+//                                             //Interface is a TypeScript tool used for Type Safety
+//                                             //acts as a blueprint that defines exactly what properties the form object must have (name, email, etc.) and what data types they are
+// import router from '../../router/index';
 
 
-interface LoginForm{                         //Interface is a TypeScript tool used for Type Safety
-                                  //acts as a blueprint that defines exactly what properties the form object must have (name, email, etc.) and what data types they are
-    email: string;
-    password: string;
-    
-}
+
+
+
 const form = reactive<LoginForm>({           //a Vue function that makes an entire object reactive.
-                                        //Vue automatically detects the change and updates the internal state of that object instantly.
+                                            //Vue automatically detects the change and updates the internal state of that object instantly.
     email:"",
     password:"",
     
 });
 
-const errors = reactive({           //deal with error in form
-    email: [],
-    password: []
-});
+// const errors = reactive({           //deal with error in form
+//     email: [],
+//     password: []
+// });
 
-
-
-
-
-const login = async(payload: LoginForm) =>{   
-    await axiosInstance.get("/sanctum/csrf-cookie",{    //initialize the security.
-        baseURL: "http://localhost:8000",               //Before sending any data, asking Laravel for a CSRF cookie.
-    });                                                 //we used baseURL cause it dosent has api/ in its route.
+// const login = async(payload: LoginForm) =>{   
+//     await axiosInstance.get("/sanctum/csrf-cookie",{    //initialize the security.
+//         baseURL: "http://localhost:8000",               //Before sending any data, asking Laravel for a CSRF cookie.
+//     });                                                 //we used baseURL cause it dosent has api/ in its route.
                                             
-    errors.email = [];                                  //to reset the error msg before page redirects.
-    errors.password = [];                                
+//     errors.email = [];                                  //to reset the error msg before page redirects.
+//     errors.password = [];                                
     
     
-    try{
-        await axiosInstance.post('/login', payload);    //payload is a variable name for the data you are sending to the server.
-
-    }catch (e){
+//     try{
+//         await axiosInstance.post('/login', payload);    //payload is a variable name for the data you are sending to the server.
+//         router.push("/dashboard");
+//     }catch (e){
        
-        if(e instanceof AxiosError && e.response?.status === 422){
+//         if(e instanceof AxiosError && e.response?.status === 422){
 
-            errors.email = e.response.data.errors.email;
-            errors.password = e.response.data.errors.password;
-        }
-    }
-};
+//             errors.email = e.response.data.errors.email;
+//             errors.password = e.response.data.errors.password;
+//         }
+//     }
+// };
+
+
+import { useAuthStore } from '../../store/auth';
+
+const { login,errors2 } = useAuthStore();
+
+
+
+
 
 
 </script>
@@ -68,7 +68,7 @@ const login = async(payload: LoginForm) =>{
 <template>
     <h1 class="text-3xl text-slate-200 p-4">Login</h1>
 <!-- .prevent is a Modifier. HTML form refresh the whole page so it stops that default behavior so your js can handle the submission smoothly without a page reload.-->
- <!-- v-model is the "bridge" between your HTML and your JavaScript -->
+<!-- v-model is the "bridge" between your HTML and your JavaScript -->
     <form @submit.prevent="login(form)"                         
                                                             
         class="max-w-sm mx-auto p-4 bg-white rounded-lg shadow-md dark:bg-gray-800">
@@ -86,9 +86,9 @@ const login = async(payload: LoginForm) =>{
                 focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body" 
                 placeholder="name@flowbite.com"
             />
-            <template v-if="errors.email?.length">
+            <template v-if="errors2.email?.length">
                 <span
-                    v-for="error in errors.email"
+                    v-for="error in errors2.email"
                     :key="error"
                     class="text-red-500 text-xs italic"
                 >
@@ -108,9 +108,9 @@ const login = async(payload: LoginForm) =>{
                 px-3 py-2.5 shadow-xs placeholder:text-body" 
                 placeholder="••••••••"
             />
-            <template v-if="errors.password?.length">
+            <template v-if="errors2.password?.length">
                 <span
-                    v-for="error in errors.password"
+                    v-for="error in errors2.password"
                     :key="error"
                     class="text-red-500 text-xs italic"
                 >
