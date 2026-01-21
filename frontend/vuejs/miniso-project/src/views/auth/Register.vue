@@ -84,7 +84,7 @@ const form = reactive<RegisterForm>({           //a Vue function that makes an e
 //     }
 // };
 
-import { useAuthStore } from '@/store/auth';
+import { useAuthStore } from '../../store/auth';
 
 const { register, errors1} = useAuthStore();
 

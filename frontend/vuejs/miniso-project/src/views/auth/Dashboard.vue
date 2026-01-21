@@ -50,10 +50,19 @@
 
     //using store.
 
-    import { useAuthStore } from '@/store/auth';
-    const auth = useAuthStore();
-    auth.getUser();                                                 //we are not assigning the use and should be null by default
+import { useAuthStore } from '../../store/auth';
+import { onMounted } from 'vue';
+const auth = useAuthStore();
+    
 
+
+
+// auth.getUser();                                                 //we are not assigning the use and should be null by default
+onMounted( () => {
+    if(!auth.isLoggedIn){
+        auth.getUser();
+    }
+});
 
 
 

@@ -5,6 +5,12 @@ export interface LoginForm{
     
 }
 
+export interface CreatePost{
+
+    title: string;
+    body: string;
+}
+
 export interface RegisterForm{                         
     name: string;                              
     email: string;                              

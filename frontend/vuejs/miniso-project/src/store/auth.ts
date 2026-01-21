@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, reactive } from 'vue';
 import type { RegisterForm, LoginForm, user } from "../types/index";
-import axiosInstance from "@/lib/axios";
+import axiosInstance from "../lib/axios";
 import { AxiosError } from "axios";
 import router from "../router/index";
 
@@ -35,7 +35,9 @@ export const useAuthStore = defineStore("auth", ()=>{
         try{
             await axiosInstance.post('/register', payload);    //payload is a variable name for the data you are sending to the server.
                                                                 //sends request to laravel.(also )
+            await getUser(); //because we used a constant isLoggedIn fales at decleration.
             router.push("/dashboard");
+
         }catch (e){
             if(e instanceof AxiosError && e.response?.status === 422){                      //e is instanceof AxiosError.
                                                                                             //is errors response status = 422.
@@ -66,6 +68,7 @@ export const useAuthStore = defineStore("auth", ()=>{
         
         try{
             await axiosInstance.post('/login', payload);    //payload is a variable name for the data you are sending to the server.
+            await getUser();
             router.push("/dashboard");
         }catch (e){
         
@@ -80,7 +83,7 @@ export const useAuthStore = defineStore("auth", ()=>{
 
     //dashboard logic.
     const getUser = async() =>{
-
+            if(isLoggedIn.vaule) return ;
             try{
                 const response = await axiosInstance.get('/user');      //due to async/await he function pauses for a split second while Laravel finds the user in the database and sends it back.
                 user.value = response.data;
@@ -89,6 +92,12 @@ export const useAuthStore = defineStore("auth", ()=>{
                 console.error(error);
             }
     };
+
+    const cleanState = () => {
+        user.value = null;
+        isLoggedIn.value = false;
+    }
+
 
 
 
@@ -101,6 +110,7 @@ export const useAuthStore = defineStore("auth", ()=>{
             // };
             //since we changed ref() so now this becomes
             user.value = null;
+            router.push('/login');
             isLoggedIn.value = false;
 
 
@@ -120,6 +130,19 @@ export const useAuthStore = defineStore("auth", ()=>{
         logout,
         errors1,
         errors2,
-    }
+        cleanState,
+    };
+    
+},
+{
+    persist: {
+    storage: sessionStorage,
+    pick: ['user','isLoggedIn'],//pick the specific variables
+  }
+}
+    //pinia-plugin-persistedstate is the solution to the "State Reset" problem, F5 (Refresh), your Pinia store wipes clean and returns to its initial values.
+    //By default, Pinia state lives in the browser's RAM. RAM is temporary; when the page reloads, the RAM is cleared.
+    //This plugin automatically takes your Pinia data and "saves" it into the browser's storage
 
-});
+
+);
