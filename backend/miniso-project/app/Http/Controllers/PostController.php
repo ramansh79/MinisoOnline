@@ -50,9 +50,10 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Post $post)
+    public function show($slug)
     {
-        //
+        $post = Post::where('slug',$slug)->firstOrFail();
+        return new PostResource($post);
     }
 
     /**
@@ -66,16 +67,27 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Post $post)
+    public function update(Request $request, $slug)
     {
-        //
+        $post = Post::where('slug',$slug)->firstOrFail();
+        $data = $request->validate([
+            'title' => ['required', 'string' , 'string'],
+            'body' => ['required', 'string'],
+        ]);
+
+        $data['slug'] = Str::slug($data['title']);
+        $post->update($data);
+        return new PostResource(resource: $post);
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Post $post)
+    public function destroy($slug)
     {
-        //
+        $post = Post::where('slug',$slug)->firstOrFail();
+        $post->delete();
+        return response(null, 204);
     }
 }
